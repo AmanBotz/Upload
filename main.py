@@ -161,7 +161,8 @@ async def account_login(bot: Client, m: Message):
                 url = mpd
                 keys_string = " ".join([f"--key {key}" for key in keys])
             elif "edge.api.brightcove.com" in url:
-                bcov = 'bcov_auth={yourtoken}' #yourcwtoken
+                bcov = 'bcov_auth=
+eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpYXQiOjE3NDgwODg4NDksImNvbiI6eyJpc0FkbWluIjpmYWxzZSwiYXVzZXIiOiJVMFZ6TkdGU2NuQlZjR3h5TkZwV09FYzBURGxOZHowOSIsImlkIjoiUTAxdUt6aGpXRXBuZGtSa1dtcGhWMDlRTDJoUVp6MDkiLCJmaXJzdF9uYW1lIjoiYW14NGMxVmlPRFl3T0VrdlVteFRXR05NUW5sdVp6MDkiLCJlbWFpbCI6IldHSnVTbVIwTjBGVGNHNXNZa3MxU0RoT1pTOW9SbEZDYTFGcVVURXdXVlpqZDJaTFF5dEphMDlsY3owPSIsInBob25lIjoiU1VaQ01qaHBkVUozY1VaUk4yeGpURTFIYTBvdmR6MDkiLCJhdmF0YXIiOiJLM1ZzY1M4elMwcDBRbmxrYms4M1JEbHZla05pVVQwOSIsInJlZmVycmFsX2NvZGUiOiJkbWxVVGxvMWFGa3dhVlU0Um5aRE9HUXpRMFkxZHowOSIsImRldmljZV90eXBlIjoiYW5kcm9pZCIsImRldmljZV92ZXJzaW9uIjoiUGllKEFuZHJvaWQgOS4wKSIsImRldmljZV9tb2RlbCI6IlhpYW9taSBSZWRtaSBOb3RlIDcgUHJvIiwicmVtb3RlX2FkZHIiOiIzNC4yMTEuMjAwLjg1In19.O4esgLtw4BE3mD-maxEEMoRoJ2xRo66Akn7yZR0mB3Ck1I042sv1vQZiHiaY1XJbIVzRLh2XVfQ-cT9ZKJt-Eht6ToPns1nILgPdWnMkJhmagh-_XDQM_MR5y_m_XLWcxuuX2i1hkA0VJN76B7WDQ69qEyVcCe3CBZAN4qzZmDcLPsC2UCO6hzBbOc4LgJy7V2Gs8XyOHJ3vwmf2D0YX_p-pycvhFNsPUCAyCNvyYO6gIPgTJ0r5BICtdc1Ob4yCNziubvp30_9u2BIJRpGOmGe_u19bCeUAyFtCpjxzvnEzqgd33piCcv4vN6BRaaD5t9cPK4H1aBXkiWOc929szw' #yourcwtoken
                 url = url.split("bcov_auth")[0]+bcov
             elif "tencdn.classplusapp" in url:
                 headers = {'Host': 'api.classplusapp.com', 'x-access-token': f'{token_cp}', 'user-agent': 'Mobile-Android', 'app-version': '1.4.37.1', 'api-version': '18', 'device-id': '5d0d17ac8b3c9f51', 'device-details': '2848b866799971ca_2848b8667a33216c_SDK-30', 'accept-encoding': 'gzip'}
