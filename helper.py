@@ -316,13 +316,7 @@ async def send_vid(bot: Client, m: Message,cc,filename,thumb,name,prog):
     subprocess.run(f'ffmpeg -i "{filename}" -ss 00:00:02 -vframes 1 "{filename}.jpg"', shell=True)   
     await prog.delete (True)   
     reply = await m.reply_text(f"**Uploading ...** - `{name}`")   
-    try:   
-        if thumb == "no":   
-            thumbnail = f"{filename}.jpg"   
-        else:   
-            thumbnail = thumb   
-    except Exception as e:   
-        await m.reply_text(str(e))   
+    thumbnail = thumb if thumb else f"{filename}.jpg"  
    
     dur = int(duration(filename))
     processing_msg = await m.reply_text(emoji) 
