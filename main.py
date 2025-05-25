@@ -178,9 +178,9 @@ async def account_login(bot: Client, m: Message):
                 cmd = f'yt-dlp -f "{ytf}" "{url}" -o "{name}.mp4"'
 
             try:
-                cc = f'> {str(count).zfill(3)}\n{name1}'
-                cc2 = f'> {str(count).zfill(3)}\n{name1}'
-                ccyt = f'> {str(count).zfill(3)}\n{name1}'
+                cc = f'<blockquote>{str(count).zfill(3)}</blockquote>\n{name1}'
+                cc2 = f'<blockquote>{str(count).zfill(3)}</blockquote>\n{name1}'
+                ccyt = f'<blockquote>{str(count).zfill(3)}</blockquote>\n{name1}'
 
                 if "drive" in url:
                     try:
@@ -247,7 +247,7 @@ async def account_login(bot: Client, m: Message):
                         continue
 
                 elif 'encrypted.m' in url:
-                    Show = f"Dᴏᴡɴʟᴏᴀᴅɪɴɢ....\n\n {url}"
+                    Show = f"Dᴏᴡɴʟᴏᴀᴅɪɴɢ....\n\n"
                     prog = await m.reply_text(Show)
                     res_file = await helper.download_and_decrypt_video(url, cmd, name, appxkey)
                     filename = res_file
@@ -258,7 +258,7 @@ async def account_login(bot: Client, m: Message):
                     continue
 
                 elif 'drmcdni' in url or 'drm/wv' in url:
-                    Show = f"Dᴏᴡɴʟᴏᴀᴅɪɴɢ....\n\n {url}"
+                    Show = f"Dᴏᴡɴʟᴏᴀᴅɪɴɢ....\n\n"
                     prog = await m.reply_text(Show)
                     res_file = await helper.decrypt_and_merge_video(mpd, keys_string, path, name, raw_text2)
                     filename = res_file
@@ -269,7 +269,7 @@ async def account_login(bot: Client, m: Message):
                     continue
 
                 else:
-                    Show = f"Dᴏᴡɴʟᴏᴀᴅɪɴɢ....\n\n {url}"
+                    Show = f"Dᴏᴡɴʟᴏᴀᴅɪɴɢ...."
                     prog = await m.reply_text(Show)
                     res_file = await helper.download_video(url, cmd, name)
                     filename = res_file
