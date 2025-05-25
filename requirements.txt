@@ -1,4 +1,5 @@
-pyrofork
+pyrogram
+pyromod
 tgcrypto
 yt-dlp
 requests
