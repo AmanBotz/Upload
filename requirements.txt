@@ -9,7 +9,6 @@ reportlab
 cloudscraper
 m3u8
 ffmpeg-python
-pyromod
 Flask
 gunicorn
 
