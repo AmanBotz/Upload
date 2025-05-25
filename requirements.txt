@@ -4,7 +4,6 @@ yt-dlp
 requests
 aiohttp
 aiofiles
-pyromod
 PyPDF2
 reportlab
 cloudscraper
