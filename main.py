@@ -25,17 +25,21 @@ import urllib.parse
 import tgcrypto
 import cloudscraper
 
+BOT_TOKEN = os.environ.get("BOT_TOKEN")
+API_ID = int(os.environ.get("API_ID"))
+API_HASH = os.environ.get("API_HASH")
+CW_TOKEN = os.environ.get("CW_TOKEN")
+
 bot = Client("bot",
-             bot_token='7638726864:AAFQFVx3IF7lr_K-uYOzGI-VPCjGJDfrpbU',
-             api_id=23288918,
-             api_hash='fd2b1b2e0e6b2addf6e8031f15e511f2')
+             bot_token=BOT_TOKEN,
+             api_id=API_ID,
+             api_hash=API_HASH)
 
 owner_id = [6400973182]
 auth_users = [6400973182]
 photo1 = 'https://envs.sh/PQ_.jpg'
 getstatusoutput(f"wget {photo1} -O 'photo.jpg'")
 photo = "photo.jpg"
-
 
 token_cp = 'your cp token'
 
@@ -70,20 +74,11 @@ async def account_login(bot: Client, m: Message):
         await m.reply_text("Invalid file input.")
         os.remove(x)
         return
-
+    await input.delete()
     await editable.edit(f"Total links found are **{len(links)}**\n\nSend From where you want to download initial is **1**")
     input0: Message = await bot.listen(editable.chat.id)
     raw_text = input0.text
     await input0.delete(True)
-
-    await editable.edit("**Send Me Your Batch Name or send `df` for grabing from text filename.**")
-    input1: Message = await bot.listen(editable.chat.id)
-    raw_text0 = input1.text
-    await input1.delete(True)
-    if raw_text0 == 'df':
-        b_name = file_name
-    else:
-        b_name = raw_text0
 
     await editable.edit("**Enter resolution** `1080` , `720` , `480` , `360` , `240` , `144`")
     input2: Message = await bot.listen(editable.chat.id)
@@ -106,33 +101,6 @@ async def account_login(bot: Client, m: Message):
             res = "1280x720"
     except Exception:
         res = "UN"
-
-    await editable.edit("**Now Enter A Caption to add caption on your uploaded file\n\n>>OR Send `df` for use default**")
-    input3: Message = await bot.listen(editable.chat.id)
-    raw_text3 = input3.text
-    await input3.delete(True)
-    if raw_text3 == 'df':
-        MR = "Group Admin:)™"
-    else:
-        MR = raw_text3
-
-    await editable.edit("**If pw mpd links enter working token ! **")
-    input11: Message = await bot.listen(editable.chat.id)
-    token = input11.text
-    await input11.delete(True)
-
-    await editable.edit("Now send the Thumb url For Custom Thumbnail.\nExample » `https://envs.sh/Hlb.jpg` \n Or if don't want Custom Thumbnail send = `no`")
-    input6 = await bot.listen(editable.chat.id)
-    raw_text6 = input6.text
-    await input6.delete(True)
-    await editable.delete()
-
-    thumb = input6.text
-    if thumb.startswith("http://") or thumb.startswith("https://"):
-        getstatusoutput(f"wget '{thumb}' -O 'thumb.jpg'")
-        thumb = "thumb.jpg"
-    else:
-        thumb = "no"
 
     if len(links) == 1:
         count = 1
@@ -161,7 +129,7 @@ async def account_login(bot: Client, m: Message):
                 url = mpd
                 keys_string = " ".join([f"--key {key}" for key in keys])
             elif "edge.api.brightcove.com" in url:
-                bcov = f'bcov_auth={token}' #yourcwtoken
+                bcov = f'bcov_auth={CW_TOKEN}' #yourcwtoken
                 url = url.split("bcov_auth")[0]+bcov
             elif "tencdn.classplusapp" in url:
                 headers = {'Host': 'api.classplusapp.com', 'x-access-token': f'{token_cp}', 'user-agent': 'Mobile-Android', 'app-version': '1.4.37.1', 'api-version': '18', 'device-id': '5d0d17ac8b3c9f51', 'device-details': '2848b866799971ca_2848b8667a33216c_SDK-30', 'accept-encoding': 'gzip'}
@@ -184,7 +152,7 @@ async def account_login(bot: Client, m: Message):
                 url = f"{api_url}pw-dl?url={url}&token={token}&authorization={api_token}&q={raw_text2}"
 
             name1 = links[i][0].replace("\t", "").replace(":", "").replace("/", "").replace("+", "").replace("#", "").replace("|", "").replace("@", "").replace("*", "").replace(".", "").replace("https", "").replace("http", "").strip()
-            name = f'{name1[:60]} 𝐃𝐈𝐋𝐉𝐀𝐋𝐄 ❤️'
+            name = f'{name1[:60]}'
 
             if "youtu" in url:
                 ytf = f"b[height<={raw_text2}][ext=mp4]/bv[height<={raw_text2}][ext=mp4]+ba[ext=m4a]/b[ext=mp4]"
@@ -197,16 +165,14 @@ async def account_login(bot: Client, m: Message):
                 cmd = f'yt-dlp -f "{ytf}" "{url}" -o "{name}.mp4"'
 
             try:
-                cc = f'**╭── ⋆⋅☆⋅⋆ ──╮**\n✦ **{str(count).zfill(3)}** ✦\n**╰── ⋆⋅☆⋅⋆ ──╯**\n\n🎭 **Title:** `{name1} 😎 Admin:)™.mkv`\n🖥️ **Resolution:** [{res}]\n\n📘 **Course:** `{b_name}`\n\n🚀 **Extracted By:** `{MR}`'
-                cc1 = f'**╭── ⋆⋅☆⋅⋆ ──╮**\n✦ **{str(count).zfill(3)}** ✦\n**╰── ⋆⋅☆⋅⋆ ──╯**\n\n🎭 **Title:** `{name1} 😎 Admin:)™.pdf`\n\n📘 **Course:** `{b_name}`\n\n🚀 **Extracted By:** `{MR}`'
-                cc2 = f'**╭── ⋆⋅☆⋅⋆ ──╮**\n✦ **{str(count).zfill(3)}** ✦\n**╰── ⋆⋅☆⋅⋆ ──╯**\n\n🎭 **Title:** `{name1} 😎 Admin:)™.jpg`\n\n📘 **Course:** `{b_name}`\n\n🚀 **Extracted By:** `{MR}`'
-                ccyt = f'**╭── ⋆⋅☆⋅⋆ ──╮**\n✦ **{str(count).zfill(3)}** ✦\n**╰── ⋆⋅☆⋅⋆ ──╯**\n\n🎭 **Title:** `{name1} 😎 Admin:)™.mkv`\n🎬 **Video Link:** {url}\n🖥️ **Resolution:** [{res}]\n\n📘 **Course:** `{b_name}`\n\n🚀 **Extracted By:** `{MR}`'
+                cc = f'> {str(count).zfill(3)}\n{name1}'
+                cc2 = f'> {str(count).zfill(3)}\n{name1}'
+                ccyt = f'> {str(count).zfill(3)}\n{name1}'
 
                 if "drive" in url:
                     try:
                         ka = await helper.download(url, name)
-                        copy = await bot.send_document(chat_id=m.chat.id, document=ka, caption=cc1)
-                        count += 1
+                        copy = await bot.send_document(chat_id=m.chat.id, document=ka)
                         os.remove(ka)
                         time.sleep(1)
                     except FloodWait as e:
@@ -218,8 +184,7 @@ async def account_login(bot: Client, m: Message):
                     pdf_key = url.split('*')[1]
                     url = url.split('*')[0]
                     pdf_enc = await helper.download_and_decrypt_pdf(url, name, pdf_key)
-                    copy = await bot.send_document(chat_id=m.chat.id, document=pdf_enc, caption=cc1)
-                    count += 1
+                    copy = await bot.send_document(chat_id=m.chat.id, document=pdf_enc)
                     os.remove(pdf_enc)
                     continue
 
@@ -228,8 +193,7 @@ async def account_login(bot: Client, m: Message):
                         cmd = f'yt-dlp -o "{name}.pdf" "{url}"'
                         download_cmd = f"{cmd} -R 25 --fragment-retries 25"
                         os.system(download_cmd)
-                        copy = await bot.send_document(chat_id=m.chat.id, document=f'{name}.pdf', caption=cc1)
-                        count += 1
+                        copy = await bot.send_document(chat_id=m.chat.id, document=f'{name}.pdf')
                         os.remove(f'{name}.pdf')
                     except FloodWait as e:
                         await m.reply_text(str(e))
@@ -261,9 +225,8 @@ async def account_login(bot: Client, m: Message):
                     try:
                         await helper.pdf_download(f"{api_url}utkash-ws?url={url}&authorization={api_token}", f"{name}.html")
                         time.sleep(1)
-                        await bot.send_document(chat_id=m.chat.id, document=f"{name}.html", caption=cc1)
+                        await bot.send_document(chat_id=m.chat.id, document=f"{name}.html")
                         os.remove(f'{name}.html')
-                        count += 1
                         time.sleep(5)
                     except FloodWait as e:
                         await asyncio.sleep(e.x)
@@ -271,7 +234,7 @@ async def account_login(bot: Client, m: Message):
                         continue
 
                 elif 'encrypted.m' in url:
-                    Show = f"✈️ 𝐏𝐑𝐎𝐆𝐑𝐄𝐒𝐒 ✈️\n\n┠ 📈 Total Links = {len(links)}\n┠ 💥 Currently On = {str(count).zfill(3)}\n\n**📩 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃𝐈𝐍𝐆 📩**\n\n**🧚🏻‍♂️ Title** : {name}\n├── **Extention** : {MR}\n├── **Resolution** : {raw_text2}\n├── **Url** : `Kya karega URL dekh ke  BSDK 👻👻`\n├── **Thumbnail** : `{input6.text}`\n├── **Bot Made By** : "
+                    Show = f"Dᴏᴡɴʟᴏᴀᴅɪɴɢ....\n\n {url}"
                     prog = await m.reply_text(Show)
                     res_file = await helper.download_and_decrypt_video(url, cmd, name, appxkey)
                     filename = res_file
@@ -282,7 +245,7 @@ async def account_login(bot: Client, m: Message):
                     continue
 
                 elif 'drmcdni' in url or 'drm/wv' in url:
-                    Show = f"𝐏𝐑𝐎𝐆𝐑𝐄𝐒𝐒 ✈️\n\n┠ 📈 Total Links = {len(links)}\n┠ 💥 Currently On = {str(count).zfill(3)}\n\n**📩 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃𝐈𝐍𝐆 📩**\n\n**🧚🏻‍♂️ Title** : {name}\n├── **Extention** : {MR}\n├── **Resolution** : {raw_text2}\n├── **Url** : `Kya karega URL dekh ke  BSDK 👻👻`\n├── **Thumbnail** : `{input6.text}`\n├── **Bot Made By** : "
+                    Show = f"Dᴏᴡɴʟᴏᴀᴅɪɴɢ....\n\n {url}"
                     prog = await m.reply_text(Show)
                     res_file = await helper.decrypt_and_merge_video(mpd, keys_string, path, name, raw_text2)
                     filename = res_file
@@ -293,7 +256,7 @@ async def account_login(bot: Client, m: Message):
                     continue
 
                 else:
-                    Show = f"✈️ 𝐏𝐑𝐎𝐆𝐑𝐄𝐒𝐒 ✈️\n\n┠ 📈 Total Links = {len(links)}\n┠ 💥 Currently On = {str(count).zfill(3)}\n\n**📩 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃𝐈𝐍𝐆 📩**\n\n**🧚🏻‍♂️ Title** : {name}\n├── **Extention** : {MR}\n├── **Resolution** : {raw_text2}\n├── **Url** : `Kya karega URL dekh ke  BSDK 👻👻`\n├── **Thumbnail** : `{input6.text}`\n├── **Bot Made By** : "
+                    Show = f"Dᴏᴡɴʟᴏᴀᴅɪɴɢ....\n\n {url}"
                     prog = await m.reply_text(Show)
                     res_file = await helper.download_video(url, cmd, name)
                     filename = res_file
