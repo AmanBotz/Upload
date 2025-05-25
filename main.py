@@ -101,6 +101,7 @@ async def account_login(bot: Client, m: Message):
             res = "1280x720"
     except Exception:
         res = "UN"
+    await editable.delete()
 
     if len(links) == 1:
         count = 1
