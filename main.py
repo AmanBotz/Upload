@@ -101,7 +101,19 @@ async def account_login(bot: Client, m: Message):
             res = "1280x720"
     except Exception:
         res = "UN"
+
+    await editable.edit("Now send the Thumb url For Custom Thumbnail.\nExample » `https://envs.sh/Hlb.jpg` \n Or if don't want Custom Thumbnail send = `no`")
+    input6 = await bot.listen(editable.chat.id)
+    raw_text6 = input6.text
+    await input6.delete(True)
     await editable.delete()
+
+    thumb = input6.text
+    if thumb.startswith("http://") or thumb.startswith("https://"):
+        getstatusoutput(f"wget '{thumb}' -O 'thumb.jpg'")
+        thumb = "thumb.jpg"
+    else:
+        thumb = "no"
 
     if len(links) == 1:
         count = 1
