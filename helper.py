@@ -311,37 +311,141 @@ def get_next_emoji():
     emoji_counter = (emoji_counter + 1) % len(EMOJIS)
     return emoji
 
-async def send_vid(bot: Client, m: Message,cc,filename,thumb,name,prog):   
+# Add these new functions
+def parse_ffmpeg_progress(line, total_duration):
+    try:
+        if "out_time=" in line:
+            time_str = line.split("out_time=")[1].split()[0]
+            time_obj = datetime.datetime.strptime(time_str, "%H:%M:%S.%f")
+            current_seconds = time_obj.hour * 3600 + time_obj.minute * 60 + time_obj.second + time_obj.microsecond/1e6
+            progress = (current_seconds / total_duration) * 100
+            return progress
+    except:
+        return 0
+    return 0
+
+async def enhance_video(input_path, message):
+    output_path = input_path.replace(".mp4", "_enhanced.mp4")
+    total_duration = duration(input_path)
+    
+    # Send initial enhancement message with rotating emoji
     emoji = get_next_emoji()
-    subprocess.run(f'ffmpeg -i "{filename}" -ss 00:00:02 -vframes 1 "{filename}.jpg"', shell=True)   
-    await prog.delete (True)   
-    reply = await m.reply_text(f"**Uploading ...** - `{name}`")   
-    try:   
-        if thumb == "no":   
-            thumbnail = f"{filename}.jpg"   
-        else:   
-            thumbnail = thumb   
-    except Exception as e:   
-        await m.reply_text(str(e))   
-   
+    status_msg = await message.reply_text(f"{emoji} Enhancing video quality... 0%")
+    
+    # FFmpeg enhancement command (adjust filters as needed)
+    cmd = [
+        "ffmpeg",
+        "-i", input_path,
+        "-vf", "unsharp=5:5:1.5:5:5:0.0,hqdn3d=4:3:6:4.5,eq=contrast=1.1:brightness=0.02",
+        "-c:a", "copy",
+        "-progress", "-",  # Enable progress reporting
+        "-y", output_path
+    ]
+    
+    proc = await asyncio.create_subprocess_exec(
+        *cmd,
+        stderr=asyncio.subprocess.PIPE,
+        stdout=asyncio.subprocess.PIPE
+    )
+    
+    # Progress monitoring
+    last_update = time.time()
+    while True:
+        line = await proc.stderr.readline()
+        if not line:
+            break
+        line = line.decode().strip()
+        progress = parse_ffmpeg_progress(line, total_duration)
+        
+        # Update progress every 2 seconds or when done
+        if time.time() - last_update > 2 or progress >= 99:
+            emoji = get_next_emoji()
+            await status_msg.edit_text(f"{emoji} Enhancing video quality... {min(progress, 99):.1f}%")
+            last_update = time.time()
+    
+    await proc.wait()
+    await status_msg.delete()
+    return output_path
+
+# Modified send_vid function with enhancement
+async def send_vid(bot: Client, m: Message, cc, filename, thumb, name, prog):    
+    try:
+        # First enhance the video
+        enhanced_file = await enhance_video(filename, m)
+        
+        # Generate thumbnail from enhanced video
+        subprocess.run(f'ffmpeg -i "{enhanced_file}" -ss 00:00:02 -vframes 1 "{enhanced_file}.jpg"', shell=True)
+        
+        await prog.delete(True)
+        reply = await m.reply_text(f"**Uploading Enhanced Video...** - `{name}`")
+        
+        # Use enhanced file for upload
+        dur = int(duration(enhanced_file))
+        processing_msg = await m.reply_text(get_next_emoji())
+        start_time = time.time()
+
+        try:
+            await m.reply_video(
+                enhanced_file,
+                caption=cc,
+                supports_streaming=True,
+                thumb=f"{enhanced_file}.jpg" if thumb == "no" else thumb,
+                duration=dur,
+                progress=progress_bar,
+                progress_args=(reply, start_time)
+            )
+        except Exception:
+            await m.reply_document(
+                enhanced_file,
+                caption=cc,
+                progress=progress_bar,
+                progress_args=(reply, start_time)
+            )
+        
+        # Cleanup files
+        os.remove(enhanced_file)
+        os.remove(f"{enhanced_file}.jpg")
+        os.remove(filename)  # Remove original file
+        
+        await processing_msg.delete(True)
+        await reply.delete(True)
+        
+    except Exception as e:
+        await m.reply_text(f"Error during enhancement: {str(e)}")
+        # Fallback to original file if enhancement fails
+        await send_vid_fallback(bot, m, cc, filename, thumb, name, prog)
+
+# Fallback function if enhancement fails
+async def send_vid_fallback(bot: Client, m: Message, cc, filename, thumb, name, prog):
+    subprocess.run(f'ffmpeg -i "{filename}" -ss 00:00:02 -vframes 1 "{filename}.jpg"', shell=True)
+    await prog.delete(True)
+    reply = await m.reply_text(f"**Uploading Original Video...** - `{name}`")
+    
     dur = int(duration(filename))
-    processing_msg = await m.reply_text(emoji) 
-   
-    start_time = time.time()   
-   
-    try:   
-        await m.reply_video(filename,caption=cc, supports_streaming=True,height=720,width=1280,thumb=thumbnail,duration=dur, progress=progress_bar,progress_args=(reply,start_time))   
-    except Exception:   
-        await m.reply_document(filename,caption=cc, progress=progress_bar,progress_args=(reply,start_time))   
-    os.remove(filename)   
-   
+    start_time = time.time()
+    
+    try:
+        await m.reply_video(
+            filename,
+            caption=cc,
+            supports_streaming=True,
+            thumb=f"{filename}.jpg" if thumb == "no" else thumb,
+            duration=dur,
+            progress=progress_bar,
+            progress_args=(reply, start_time)
+    except Exception:
+        await m.reply_document(
+            filename,
+            caption=cc,
+            progress=progress_bar,
+            progress_args=(reply, start_time))
+    
+    os.remove(filename)
     os.remove(f"{filename}.jpg")
-    await processing_msg.delete(True)
-    await reply.delete (True) 
+    await reply.delete(True) 
 
 async def watermark_pdf(file_path, watermark_text):
     def create_watermark(text):
-        """Create a PDF watermark using ReportLab."""
         packet = BytesIO()
         can = canvas.Canvas(packet, pagesize=letter)
 
