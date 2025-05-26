@@ -311,61 +311,77 @@ def get_next_emoji():
     emoji_counter = (emoji_counter + 1) % len(EMOJIS)
     return emoji
 
-# Add these new functions
-def parse_ffmpeg_progress(line, total_duration):
-    try:
-        if "out_time=" in line:
-            time_str = line.split("out_time=")[1].split()[0]
-            time_obj = datetime.datetime.strptime(time_str, "%H:%M:%S.%f")
-            current_seconds = time_obj.hour * 3600 + time_obj.minute * 60 + time_obj.second + time_obj.microsecond/1e6
-            progress = (current_seconds / total_duration) * 100
-            return progress
-    except:
-        return 0
-    return 0
-
 async def enhance_video(input_path, message):
     output_path = input_path.replace(".mp4", "_enhanced.mp4")
     total_duration = duration(input_path)
     
-    # Send initial enhancement message with rotating emoji
     emoji = get_next_emoji()
     status_msg = await message.reply_text(f"{emoji} Enhancing video quality... 0%")
     
-    # FFmpeg enhancement command (adjust filters as needed)
     cmd = [
         "ffmpeg",
+        "-hide_banner",
+        "-loglevel", "info",
         "-i", input_path,
         "-vf", "unsharp=5:5:1.5:5:5:0.0,hqdn3d=4:3:6:4.5,eq=contrast=1.1:brightness=0.02",
         "-c:a", "copy",
-        "-progress", "-",  # Enable progress reporting
+        "-progress", "-",
+        "-nostdin",
         "-y", output_path
     ]
-    
+
     proc = await asyncio.create_subprocess_exec(
         *cmd,
-        stderr=asyncio.subprocess.PIPE,
-        stdout=asyncio.subprocess.PIPE
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.STDOUT
     )
-    
-    # Progress monitoring
+
+    buffer = b""
     last_update = time.time()
-    while True:
-        line = await proc.stderr.readline()
-        if not line:
-            break
-        line = line.decode().strip()
-        progress = parse_ffmpeg_progress(line, total_duration)
-        
-        # Update progress every 2 seconds or when done
-        if time.time() - last_update > 2 or progress >= 99:
-            emoji = get_next_emoji()
-            await status_msg.edit_text(f"{emoji} Enhancing video quality... {min(progress, 99):.1f}%")
-            last_update = time.time()
     
+    while True:
+        chunk = await proc.stdout.read(4096)
+        if not chunk:
+            break
+            
+        # Handle chunk processing
+        buffer += chunk
+        while b"\r" in buffer:
+            line, buffer = buffer.split(b"\r", 1)
+            line = line.decode().strip()
+            
+            progress = parse_ffmpeg_progress(line, total_duration)
+            if progress > 0 and (time.time() - last_update > 2 or progress >= 99):
+                emoji = get_next_emoji()
+                await status_msg.edit_text(f"{emoji} Enhancing video quality... {min(progress, 99):.1f}%")
+                last_update = time.time()
+
     await proc.wait()
     await status_msg.delete()
+    
+    if proc.returncode != 0:
+        raise Exception(f"FFmpeg failed with return code {proc.returncode}")
+    
     return output_path
+
+def parse_ffmpeg_progress(line, total_duration):
+    try:
+        if "out_time_ms=" in line:
+            time_str = line.split("out_time_ms=")[1].split()[0]
+            current_seconds = int(time_str) / 1_000_000
+            progress = (current_seconds / total_duration) * 100
+            return min(progress, 100)
+            
+        elif "time=" in line:
+            time_str = line.split("time=")[1].split()[0]
+            time_obj = datetime.datetime.strptime(time_str, "%H:%M:%S.%f")
+            current_seconds = time_obj.hour * 3600 + time_obj.minute * 60 + time_obj.second + time_obj.microsecond/1e6
+            progress = (current_seconds / total_duration) * 100
+            return min(progress, 100)
+            
+    except Exception as e:
+        print(f"Progress parsing error: {str(e)}")
+    return 0
 
 # Modified send_vid function with enhancement
 async def send_vid(bot: Client, m: Message, cc, filename, thumb, name, prog):    
@@ -443,10 +459,10 @@ async def send_vid_fallback(bot: Client, m: Message, cc, filename, thumb, name, 
     
     os.remove(filename)
     os.remove(f"{filename}.jpg")
-    await reply.delete(True) 
-
+    await reply.delete(True)
 async def watermark_pdf(file_path, watermark_text):
     def create_watermark(text):
+        """Create a PDF watermark using ReportLab."""
         packet = BytesIO()
         can = canvas.Canvas(packet, pagesize=letter)
 
