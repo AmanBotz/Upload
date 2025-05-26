@@ -318,15 +318,30 @@ async def enhance_video(input_path, message):
     emoji = get_next_emoji()
     status_msg = await message.reply_text(f"{emoji} Enhancing video quality... 0%")
     
+    # Advanced enhancement command
     cmd = [
         "ffmpeg",
         "-hide_banner",
         "-loglevel", "info",
         "-i", input_path,
-        "-vf", "unsharp=5:5:1.5:5:5:0.0,hqdn3d=4:3:6:4.5,eq=contrast=1.1:brightness=0.02",
+        "-vf",
+        (
+            "split [original][working];"
+            "[working]"
+            "nlmeans=1.0:7:5:3:3,"
+            "unsharp=5:5:1.5:5:5:0.0,"
+            "smartblur=1.5:-0.25:-3.5,"
+            "vaguedenoiser=threshold=3:method=3:nsteps=6,"
+            "scale=iw*1.5:ih*1.5:flags=lanczos,"
+            "eq=contrast=1.1:brightness=0.02:saturation=1.2"
+            "[enhanced];"
+            "[original][enhanced] overlay"
+        ),
         "-c:a", "copy",
+        "-c:v", "libx264",
+        "-crf", "18",
+        "-preset", "slow",
         "-progress", "-",
-        "-nostdin",
         "-y", output_path
     ]
 
@@ -340,11 +355,10 @@ async def enhance_video(input_path, message):
     last_update = time.time()
     
     while True:
-        chunk = await proc.stdout.read(4096)
+        chunk = await proc.stdout.read(16384)  # Increased buffer size
         if not chunk:
             break
             
-        # Handle chunk processing
         buffer += chunk
         while b"\r" in buffer:
             line, buffer = buffer.split(b"\r", 1)
@@ -460,6 +474,7 @@ async def send_vid_fallback(bot: Client, m: Message, cc, filename, thumb, name, 
     os.remove(filename)
     os.remove(f"{filename}.jpg")
     await reply.delete(True)
+
 async def watermark_pdf(file_path, watermark_text):
     def create_watermark(text):
         """Create a PDF watermark using ReportLab."""
