@@ -433,6 +433,7 @@ async def send_vid_fallback(bot: Client, m: Message, cc, filename, thumb, name, 
             duration=dur,
             progress=progress_bar,
             progress_args=(reply, start_time)
+        )
     except Exception:
         await m.reply_document(
             filename,
