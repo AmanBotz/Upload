@@ -178,9 +178,9 @@ async def account_login(bot: Client, m: Message):
                 cmd = f'yt-dlp -f "{ytf}" "{url}" -o "{name}.mp4"'
 
             try:
-                cc = f'<blockquote>{str(count).zfill(3)}</blockquote>\n{name1}'
-                cc2 = f'<blockquote>{str(count).zfill(3)}</blockquote>\n{name1}'
-                ccyt = f'<blockquote>{str(count).zfill(3)}</blockquote>\n{name1}'
+                cc = f'[{str(count).zfill(3)}] {name1}'
+                cc2 = f'[{str(count).zfill(3)}] {name1}'
+                ccyt = f'[{str(count).zfill(3)}] {name1}'
 
                 if "drive" in url:
                     try:
